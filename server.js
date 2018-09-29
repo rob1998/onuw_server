@@ -110,7 +110,7 @@ io.on("connection", socket => {
     console.log("client disconnected, id: ", socket.id);
     game.removePlayerSocket(socket.id);
     if (!game.checkPlayersLeft()) {
-      game.resetGame;
+      game.resetGame();
       console.log("resetting game");
     }
   });
