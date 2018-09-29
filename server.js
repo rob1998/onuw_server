@@ -1,9 +1,11 @@
 const express = require("express");
 const http = require("http");
 const socket = require("socket.io");
-const port = 8000;
 const app = express();
-const server = http.createServer();
+const port = process.env.PORT || 3000;
+// const server = http.createServer();
+const server = express()
+  .listen(port, () => console.log(`Listening on ${ port }`));
 const io = socket(server);
 
 const types = require("./types.js").types;
