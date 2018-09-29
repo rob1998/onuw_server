@@ -101,8 +101,18 @@ io.on("connection", socket => {
     }
   });
 
+  socket.on(types.UPDATE_GAME_RESET, payload => {
+    game.resetGame();
+    io.sockets.emit(types.RESET_GAME);
+  });
+
   socket.on("disconnect", () => {
     console.log("client disconnected, id: ", socket.id);
+    game.removePlayerSocket(socket.id);
+    if (!game.checkPlayersLeft()) {
+      game.resetGame;
+      console.log("resetting game");
+    }
   });
 });
 

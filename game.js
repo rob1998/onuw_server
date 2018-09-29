@@ -30,6 +30,7 @@ class Game {
   }
 
   // Print the status of the game
+  // For debugging purposes
   printAll() {
     console.log("===============================");
     console.log("Players: ");
@@ -246,6 +247,28 @@ class Game {
     };
   }
 
+  // Remove a player and their socket ID when they disconnect
+  removePlayerSocket(socketID) {
+    for (var player in this.playerSockets) {
+      if (this.playerSockets[player] == socketID) {
+        this.playerSockets = {
+          ...this.playerSockets,
+          [player]: null
+        };
+      }
+    }
+  }
+  
+  // Checks if there are still players left int the game
+  checkPlayersLeft() {
+    for (var player in this.playerSockets) {
+      if (this.playerSockets[player] != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Changes the gamePhase
   changeGamePhase(newPhase) {
     this.gamePhase = newPhase;
@@ -436,6 +459,33 @@ class Game {
       this.killed = {vote: killed};
     }
     console.log(this.killed);
+  }
+
+  // Resets the game state
+  resetGame() {
+    this.players = {}; // The current players in the game with their roles
+    this.playersNight = {}; // The current players in the game with their roles
+    this.playerSockets = {};  // Map the players to their socket id's
+    this.centerCards = {
+      "Alpha": "",
+      "Beta": "",
+      "Gamma": ""
+    };
+    this.centerCardsNight = {}; // Center cards during the night
+    this.gamePhase = "Intro"; // Current state of the game, determines what view to show
+    this.currentRoles = []; // The roles that are in the current game
+    this.allRoles = roles; // All of the roles that are available in the game
+    this.currentDescriptions = {}; // Descriptions that will be used this game
+    this.allDescriptions = descriptions; // All the descriptions for the roles
+    this.majorityNum = 0; // Number used to confirm everyone
+    this.werewolves = []; // The players that are werewolves in this game
+    this.masons = []; // The playesr that are masons in this game
+    this.playerActions = {}; // Stores all of the actions players have sent to server
+    this.messageBack = {}; // Messages to send back to players
+    this.killSelect = {}; // Totaling KillSelect
+    this.guaranteeKill = null; // Guarantee kill for hunter
+    this.killActions = []; // Logs the kills
+    this.killed // List of people killed
   }
 }
 
