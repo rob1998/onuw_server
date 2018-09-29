@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 import { messageTypes } from "./types";
-const socket = io("https://secure-wave-16395.herokuapp.com/");
+const socket = io("ws://secure-wave-16395.herokuapp.com/");
 
 const init = store => {
   // add listeners to socket messages so we can re-dispatch them as actions
