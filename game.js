@@ -1,5 +1,9 @@
 const roles = require("./gameConsts.js").roles;
 const descriptions = require("./gameConsts.js").descriptions;
+
+const sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
 // This is the master server copy of a game that is running
 class Game {
   constructor() {
@@ -23,6 +27,7 @@ class Game {
     this.masons = []; // The playesr that are masons in this game
     this.playerActions = {}; // Stores all of the actions players have sent to server
     this.messageBack = {}; // Messages to send back to players
+    this.actionHappened = false; // Whether or not an action happened during the night
     this.killSelect = {}; // Totaling KillSelect
     this.guaranteeKill = null; // Guarantee kill for hunter
     this.killActions = []; // Logs the kills
@@ -178,7 +183,7 @@ class Game {
       "Hunter",
       "Insomniac"
     ];
-    if (role === "Seer" || role === "Troublemaker") {
+    if (role === "Troublemaker") {
       return 2;
     } else if (noActionRoles.indexOf(role) > -1) {
       return 0;
@@ -368,9 +373,11 @@ class Game {
     this.centerCardsNight = Object.assign({}, this.centerCards);
     //If doppleganger were implemented, it would go here
     if (this.exists("Lone Werewolf")) {
+      this.actionHappened = true;
       this.messageBack["Lone Werewolf"] = "The center card you discovered is " + this.playerActions["Lone Werewolf"][0] + ": " + this.getPlayersRoleNight(this.playerActions["Lone Werewolf"][0]);
     }
     if (this.exists("Seer")) {
+      this.actionHappened = true;
       let messageIntro = "The card you see is "
       this.playerActions.Seer.forEach(card => {
         messageIntro += card + ": " + this.getPlayersRoleNight(card) + " ";
@@ -378,14 +385,17 @@ class Game {
       this.messageBack.Seer = messageIntro;
     }
     if (this.exists("Robber")) {
+      this.actionHappened = true;
       this.swapPlayersRole(this.getRolesPlayer("Robber"), this.playerActions["Robber"][0]);
       this.messageBack.Robber = "You have swapped your role with " + this.playerActions["Robber"][0] + ", you are now " + this.getPlayersRole(this.playerActions["Robber"][0]);
     }
     if (this.exists("Troublemaker")) {
+      this.actionHappened = true;
       this.swapPlayersRole(this.playerActions["Troublemaker"][0], this.playerActions["Troublemaker"][1]);
       this.messageBack.Troublemaker = "You have switched the roles of " + this.playerActions["Troublemaker"][0] + " and " + this.playerActions["Troublemaker"][1];
     }
     if (this.exists("Drunk")) {
+      this.actionHappened = true;
       this.swapPlayersRole(this.getRolesPlayer("Drunk"), this.playerActions["Drunk"]);
       this.messageBack.Drunk= "You have swapped your role with a center card";
     }
@@ -396,8 +406,13 @@ class Game {
         this.messageBack.Insomniac = "You look at your card at the end of the night and you are now: " + this.getPlayersRoleNight(this.getRolesPlayer("Insomniac"));
       }
     }
+
     // Set gamePhase to Day
     this.changeGamePhase("Daytime")
+  }
+
+  getActionHappened() {
+    return this.actionHappened;
   }
 
   exists(role) {
@@ -429,7 +444,7 @@ class Game {
         };
       }
     } else {
-      this.guaranteeKill = selectedPlayer;
+      this.guaranteeKill = [selectedPlayer, this.getPlayersRole(selectedPlayer)];
     }
 
     //Check if everyone has submitted an action
@@ -444,10 +459,10 @@ class Game {
     let killedNum = 0;
     for (var player in this.killSelect) {
       if (this.killSelect[player] > killedNum) {
-        killed = [player];
+        killed = [[player, "/", this.getPlayersRole(player)]];
         killedNum = this.killSelect[player];
       } else if (this.killSelect[player] === killedNum) {
-        killed.push(player);
+        killed.push([player, "/", this.getPlayersRole(player)]);
       }
     }
 

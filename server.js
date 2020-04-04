@@ -14,6 +14,10 @@ const types = require("./types.js").types;
 const Game = require("./game.js");
 const game = new Game();
 
+const sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 io.on("connection", socket => {
   console.log("client connected, id: ", socket.id);
 
@@ -86,8 +90,16 @@ io.on("connection", socket => {
           io.to(playerSocket[player]).emit(types.UPDATE_DAYDESCRIPTION, null);
         }
       }
-      io.sockets.emit(types.UPDATE_PLAYERS, game.clearPlayers());
-      io.sockets.emit(types.UPDATE_GAMEPHASE, game.getGamePhase());
+      let sleepTime = 0;
+      if (game.actionHappened) {
+        sleepTime = 5000;
+      } else {
+        sleepTime = 10000;
+      }
+      sleep(sleepTime).then(() => {
+        io.sockets.emit(types.UPDATE_PLAYERS, game.clearPlayers());
+        io.sockets.emit(types.UPDATE_GAMEPHASE, game.getGamePhase());
+      })
     }
   });
 
@@ -96,8 +108,10 @@ io.on("connection", socket => {
     
     if (game.getGamePhase() === "Finale") {
       console.log("Finale");
-      io.sockets.emit(types.UPDATE_GAMEPHASE, game.getGamePhase());
-      io.sockets.emit(types.UPDATE_KILLS, game.getKilled()); 
+      sleep(100).then(() => {
+        io.sockets.emit(types.UPDATE_GAMEPHASE, game.getGamePhase());
+        io.sockets.emit(types.UPDATE_KILLS, game.getKilled());
+      })
     }
   });
 
