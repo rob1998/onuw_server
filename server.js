@@ -117,7 +117,9 @@ io.on("connection", socket => {
 
   socket.on(types.UPDATE_GAME_RESET, payload => {
     game.resetGame();
-    io.sockets.emit(types.RESET_GAME);
+    game.gamePhase = "intro"
+    io.sockets.emit(types.UPDATE_GAMEPHASE, game.getGamePhase());
+    io.sockets.emit(types.UPDATE_GAME_RESET);
   });
 
   socket.on("disconnect", () => {
